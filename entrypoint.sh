@@ -52,15 +52,17 @@ sh -c "aws $_aws_profile s3 sync ${SOURCE_DIR:-.} s3://${AWS_S3_BUCKET}/${DEST_D
               --no-progress \
               ${ENDPOINT_APPEND} $*"
               
-sh -c 'aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths "/*" --profile s3-sync-action'
+sh -c "aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths \"/*\" ${_aws_profile}"
 
 # Clear out credentials after we're done.
 # We need to re-run `aws configure` with bogus input instead of
 # deleting ~/.aws in case there are other credentials living there.
 # https://forums.aws.amazon.com/thread.jspa?threadID=148833
-aws configure --profile s3-sync-action <<-EOF > /dev/null 2>&1
-null
-null
-null
-text
+if [[ -n "$_aws_profile" ]]; then
+  aws configure --profile s3-sync-action <<-EOF > /dev/null 2>&1
+  null
+  null
+  null
+  text
 EOF
+fi
